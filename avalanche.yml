@@ -1,0 +1,45 @@
+version: "3.9"
+x-logging: &logging
+  logging:
+    driver: json-file
+    options:
+      max-size: 100m
+      max-file: "3"
+      tag: '{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}'
+
+services:
+  avalanche:
+    restart: "unless-stopped"
+    stop_grace_period: 5m
+    image: avaplatform/avalanchego:${AVA_DOCKER_TAG}
+    volumes:
+      - ava-data:/var/lib/ava
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - 9651:9651/tcp
+    <<: *logging
+    entrypoint:
+      - /avalanchego/build/avalanchego
+      - --db-dir
+      - /var/lib/ava
+      - --network-id
+      - ${NETWORK}
+      - --log-level
+      - ${LOG_LEVEL}
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.${RPC_HOST:-ava}.service=${RPC_HOST:-ava}
+      - traefik.http.routers.${RPC_HOST:-ava}.entrypoints=websecure
+      - traefik.http.routers.${RPC_HOST:-ava}.rule=Host(`${RPC_HOST:-ava}.${DOMAIN}`)
+      - traefik.http.routers.${RPC_HOST:-ava}.tls.certresolver=letsencrypt
+      - traefik.http.routers.${RPC_HOST:-ava}lb.service=${RPC_HOST:-rpc}
+      - traefik.http.routers.${RPC_HOST:-ava}lb.entrypoints=websecure
+      - traefik.http.routers${RPC_HOST:-ava}lb.rule=Host(`${RPC_LB:-ava-lb}.${DOMAIN}`)
+      - traefik.http.routers.${RPC_HOST:-ava}lb.tls.certresolver=letsencrypt
+      - traefik.http.services.${RPC_HOST:-ava}.loadbalancer.server.port=9650
+      - metrics.scrape=true
+      - metrics.path=/ext/metrics
+      - metrics.port=9650
+
+volumes:
+  ava-data:
