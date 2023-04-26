@@ -34,9 +34,9 @@ services:
       - traefik.http.routers.${RPC_HOST:-ava}.entrypoints=websecure
       - traefik.http.routers.${RPC_HOST:-ava}.rule=Host(`${RPC_HOST:-ava}.${DOMAIN}`)
       - traefik.http.routers.${RPC_HOST:-ava}.tls.certresolver=letsencrypt
-      - traefik.http.routers.${RPC_HOST:-ava}lb.service=${RPC_HOST:-rpc}
+      - traefik.http.routers.${RPC_HOST:-ava}lb.service=${RPC_HOST:-ava}
       - traefik.http.routers.${RPC_HOST:-ava}lb.entrypoints=websecure
-      - traefik.http.routers${RPC_HOST:-ava}lb.rule=Host(`${RPC_LB:-ava-lb}.${DOMAIN}`)
+      - traefik.http.routers.${RPC_HOST:-ava}lb.rule=Host(`${RPC_LB:-ava-lb}.${DOMAIN}`)
       - traefik.http.routers.${RPC_HOST:-ava}lb.tls.certresolver=letsencrypt
       - traefik.http.services.${RPC_HOST:-ava}.loadbalancer.server.port=9650
       - metrics.scrape=true
