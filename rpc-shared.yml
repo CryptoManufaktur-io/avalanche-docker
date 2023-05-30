@@ -3,4 +3,4 @@ version: "3.9"
 services:
   avalanche:
     ports:
-      - 9650:9650/tcp
+      - ${HTTP_PORT:-9650}:${HTTP_PORT:-9650}/tcp

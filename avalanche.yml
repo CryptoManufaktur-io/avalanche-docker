@@ -16,7 +16,7 @@ services:
       - ava-data:/var/lib/ava
       - /etc/localtime:/etc/localtime:ro
     ports:
-      - 9651:9651/tcp
+      - ${P2P_PORT:-9651}:${P2P_PORT:-9651}/tcp
     <<: *logging
     entrypoint:
       - /avalanchego/build/avalanchego
@@ -26,6 +26,10 @@ services:
       - ${NETWORK}
       - --http-host
       - 0.0.0.0
+      - --http-port
+      - ${HTTP_PORT:-9650}
+      - --staking-port
+      - ${P2P_PORT:-9651}
       - --log-level
       - ${LOG_LEVEL}
     labels:
