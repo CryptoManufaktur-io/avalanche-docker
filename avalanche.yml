@@ -30,6 +30,8 @@ services:
       - ${HTTP_PORT:-9650}
       - --staking-port
       - ${P2P_PORT:-9651}
+      - --public-ip-resolution-service
+      - ifconfigme
       - --log-level
       - ${LOG_LEVEL}
     labels:
