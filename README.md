@@ -19,4 +19,4 @@ If you use a load balancer like  haproxy you can query `/ext/health` to see whet
 
 To update Avalanche, use `./ethd update` followed by `./ethd up`
 
-This is avalanche-docker v1.0
+This is avalanche-docker v1.0.1
