@@ -22,6 +22,8 @@ services:
       - /avalanchego/build/avalanchego
       - --db-dir
       - /var/lib/ava
+      - --db-type
+      - ${DB_TYPE}
       - --network-id
       - ${NETWORK}
       - --http-host
@@ -35,7 +37,7 @@ services:
       - ifconfigme
       - --log-level
       - ${LOG_LEVEL}
-    command: ${AVA_EXTRAS}
+    command: ${EXTRAS}
     labels:
       - traefik.enable=true
       - traefik.http.routers.${RPC_HOST:-ava}.service=${RPC_HOST:-ava}
