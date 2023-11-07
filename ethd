@@ -72,7 +72,6 @@ determine_docker() {
 determine_compose() {
 # Check for Compose V2 (docker compose) vs Compose V1 (docker-compose)
   if docker compose version >/dev/null 2>&1; then
-    __compose_exe="docker compose"
     __old_compose=0
   else
     __old_compose=1
@@ -81,7 +80,7 @@ determine_compose() {
       echo
       echo "You are using docker-compose ${__compose_version}, which is unsupported by Docker, Inc."
       echo "${__project_name} only supports Compose V2."
-      echo ""
+      echo
       echo "It is recommended that you replace Compose V1 with Compose V2."
       while true; do
         read -rp "Do you want to update Docker Compose to V2? (yes/no) " yn
@@ -106,12 +105,12 @@ upgrade_compose() {
   fi
   echo "Updating Docker Compose to V2"
   if [[ "$__distro" = "ubuntu" ]]; then
-    ${__auto_sudo} apt-get update && ${__auto_sudo} apt-get install -y ca-certificates curl gnupg lsb-release
+    ${__auto_sudo} apt-get update && ${__auto_sudo} apt-get install -y lsb-release
     __major_version=$(lsb_release -r | cut -d: -f2 | sed s/'^\t'// | cut -d. -f1)
     if [ "${__major_version}" -lt 20 ]; then
-      echo "This script cannot update Docker Compose on Ubuntu ${__major_version}."
+      echo "${__project_name} cannot update Docker Compose on Ubuntu ${__major_version}."
       echo "Consider upgrading to 20.04 and then 22.04."
-      exit 0
+      exit 1
     fi
     if dpkg-query -W -f='${Status}' docker.io 2>/dev/null | grep -q "ok installed"; then
         ${__auto_sudo} apt-mark manual docker.io
@@ -124,15 +123,14 @@ upgrade_compose() {
     ${__auto_sudo} apt-get install -y docker-compose-v2 docker-buildx
     echo "Installed docker-compose-v2"
     __old_compose=0
-    __compose_exe="docker compose"
     __compose_upgraded=1
   elif [[ "$__distro" =~ "debian" ]]; then
     ${__auto_sudo} apt-get update && ${__auto_sudo} apt-get -y install ca-certificates curl gnupg lsb-release
     __major_version=$(lsb_release -r | cut -f2)
     if [ "${__major_version}" -lt 10 ]; then
-        echo "This script cannot update Docker Compose on Debian ${__major_version}."
+        echo "${__project_name} cannot update Docker Compose on Debian ${__major_version}."
         echo "Consider upgrading to 10, then 11 and then 12."
-        exit 0
+        exit 1
     fi
     if dpkg-query -W -f='${Status}' docker.io 2>/dev/null | grep -q "ok installed"; then
         ${__auto_sudo} apt-mark manual docker.io
@@ -150,10 +148,9 @@ upgrade_compose() {
     ${__auto_sudo} apt-get install -y docker-compose-plugin docker-buildx-plugin
     echo "Installed docker-compose-plugin"
     __old_compose=0
-    __compose_exe="docker compose"
     __compose_upgraded=1
   else
-    echo "This script does not know how to update Docker Compose on $__distro"
+    echo "${__project_name} does not know how to update Docker Compose on $__distro"
   fi
 }
 
@@ -184,26 +181,26 @@ check_for_snap() {
         echo "Do join us on CryptoManufaktur Discord to work through this issue."
         echo
         echo "Aborting, this is not safe"
-        exit 130
+        exit 1
     fi
 }
 
 
 install() {
     check_for_snap
-    set -e
     while true; do
         read -rp "This will attempt to install Docker and make your user part of the docker group. Do you wish to continue? (no/yes) " yn
         case $yn in
             [Yy]* ) break;;
-            * ) echo "Aborting, no changes made"; exit 0;;
+            * ) echo "Aborting, no changes made"; exit 130;;
         esac
     done
     if [[ "$__distro" = "ubuntu" ]]; then
         __major_version=$(lsb_release -r | cut -d: -f2 | sed s/'^\t'// | cut -d. -f1)
         if [ "${__major_version}" -lt 20 ]; then
-            echo "This script cannot install Docker on Ubuntu ${__major_version}."
+            echo "${__project_name} cannot install Docker on Ubuntu ${__major_version}."
             echo "Consider upgrading to 20.04 and then 22.04."
+            exit 1
         fi
         if [ -z "$(which docker)" ]; then
             ${__auto_sudo} apt-get update && ${__auto_sudo} apt-get install -y ca-certificates curl gnupg lsb-release \
@@ -234,9 +231,9 @@ install() {
             ${__auto_sudo} apt-get -y install ca-certificates curl gnupg lsb-release chrony pkg-config
             __major_version=$(lsb_release -r | cut -f2)
             if [ "${__major_version}" -lt 10 ]; then
-                echo "This script cannot install Docker on Debian ${__major_version}."
+                echo "${__project_name} cannot install Docker on Debian ${__major_version}."
                 echo "Consider upgrading to 10, then 11 and then 12."
-                exit 0
+                exit 1
             fi
             ${__auto_sudo} mkdir -p /etc/apt/keyrings
             ${__auto_sudo} curl -fsSL https://download.docker.com/linux/debian/gpg | ${__auto_sudo} gpg --dearmor -o /etc/apt/keyrings/docker.gpg
@@ -259,9 +256,9 @@ install() {
             echo "Your user is already part of the docker group"
         fi
     else
-        echo "This script does not know how to install Docker on $__distro"
+        echo "${__project_name} does not know how to install Docker on $__distro"
+        exit 1
     fi
-    set +e
     return 0
 }
 
@@ -275,7 +272,7 @@ check_disk_space() {
     if ! [[ "${__free_space}" =~ $re ]] ; then
         echo "Unable to determine free disk space. This is likely a bug."
         echo "df reports $(df -P "${__docker_dir}") and __free_space is ${__free_space}"
-        return
+        exit 70
     fi
 
     var="COMPOSE_FILE"
@@ -327,6 +324,7 @@ nag_os_version() {
 # Arguments are passed, but shellcheck doesn't recognize that
 # shellcheck disable=SC2120
 update() {
+    __during_update=1
     if [[ $(${__as_owner} git status --porcelain) ]]; then
         __dirty=1
     else
@@ -339,11 +337,11 @@ update() {
     if ! [[ "${__free_space}" =~ $re ]] ; then
         echo "Unable to determine free disk space. This is likely a bug."
         echo "df reports $(df -P "$(pwd)") and __free_space is ${__free_space}"
-        exit 130
+        exit 70
     elif [ "$(df -P "$(pwd)" | awk '/[0-9]%/{print $(NF-2)}')" -lt 1024 ]; then
         echo "You have less than 1 MiB of space left on $(pwd)."
         echo "Aborting, as an update is not safe."
-        exit 130
+        exit 1
     fi
 
     __docker_dir=$(dodocker system info --format '{{.DockerRootDir}}')
@@ -353,11 +351,11 @@ update() {
     if ! [[ "${__free_space}" =~ $re ]] ; then
         echo "Unable to determine free disk space. This is likely a bug."
         echo "df reports $(df -P "${__docker_dir}") and __free_space is ${__free_space}"
-        exit 130
+        exit 70
     elif [ "${__free_space}" -lt 1048576 ]; then
         echo "You have less than 1 GiB of space left on ${__docker_dir}."
         echo "Aborting, as an update is not safe."
-        exit 130
+        exit 1
     fi
 
     if [ -z "${ETHDSECUNDO-}" ]; then
@@ -392,6 +390,7 @@ find the original contents in ${ENV_FILE}.bak."
             ${__as_owner} rm "${ENV_FILE}".source || true
         fi
     fi
+
     echo
     echo "An $__me up command will start using the new images and configuration."
     nag_os_version
@@ -408,6 +407,7 @@ find the original contents in ${ENV_FILE}.bak."
         echo
         ${__as_owner} git status --porcelain
     fi
+    __during_update=0
 }
 
 
@@ -507,9 +507,9 @@ cmd() {
 
 terminate() {
     if [ -z "$(dodocker volume ls -q -f "name=^$(basename "$(realpath .)")_[^_]+")" ]; then
-        echo "There are no data stores - Docker volumes - left to remove for this Ethereum node."
+        echo "There are no data stores - Docker volumes - left to remove for this ${__app_name}."
         stop
-        return 0
+        exit 0
     fi
 
     while true; do
@@ -524,9 +524,9 @@ terminate() {
 # In this case I want the word splitting, so rm can remove all volumes
 # shellcheck disable=SC2046
     dodocker volume rm $(dodocker volume ls -q -f "name=^$(basename "$(realpath .)")_[^_]+")
-    echo ""
+    echo
     echo "All containers stopped and all volumes deleted"
-    echo ""
+    echo
 }
 
 
@@ -541,6 +541,7 @@ set_value_in_env() {
     fi
 }
 
+
 handle_error() {
     if [[ ! $- =~ e ]]; then
         # set +e, do nothing
@@ -550,15 +551,12 @@ handle_error() {
     local exit_code=$1
     local line_no=$2
     if [ "$exit_code" -eq 130 ]; then
-        echo "$__me terminated"
+        echo "$__me terminated by user"
     else
         echo "$__me failed with error $exit_code on line $line_no"
-        echo
-        echo "Please save the logs and come to CryptoManufaktur Discord to troubleshoot this."
-        echo
-    fi
-    if [ -n "${__command}" ]; then
-        echo "This happened during $__me ${__command} ${__params}"
+        if [ -n "${__command}" ]; then
+            echo "This happened during $__me ${__command} ${__params}"
+        fi
     fi
     if [ "$__during_update" -eq 1 ] && [ "$__during_migrate" -eq 1 ]; then
         cp "${ENV_FILE}" "${ENV_FILE}".partial
@@ -623,6 +621,7 @@ help() {
     echo
 }
 
+
 # Main body from here
 ENV_FILE=.env
 __during_update=0
@@ -650,7 +649,7 @@ fi
 
 if [ "${OWNER}" == "root" ]; then
     echo "Please install ${__project_name} as a non-root user."
-    exit 1
+    exit 0
 fi
 
 __command="$1"
@@ -681,12 +680,12 @@ if [ "${__old_compose}" -eq 1 ]; then
 fi
 
 if ! dodocker images >/dev/null 2>&1; then
-    echo "Please ensure you can call $__docker_exe before running this script."
+    echo "Please ensure you can call $__docker_exe before running ${__me}."
     exit 1
 fi
 
 if ! docompose --help >/dev/null 2>&1; then
-    echo "Please ensure you can call $__compose_exe before running this script"
+    echo "Please ensure you can call $__compose_exe before running ${__me}."
     exit 1
 fi
 
