@@ -33,6 +33,8 @@ services:
     <<: *logging
     entrypoint:
       - /avalanchego/build/avalanchego
+      - --chain-config-dir
+      - /var/lib/ava/chain-configs
       - --db-dir
       - /var/lib/ava
       - --db-type
