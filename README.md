@@ -21,4 +21,4 @@ If you use a load balancer like  haproxy you can query `/ext/health` to see whet
 
 To update Avalanche, use `./avad update` followed by `./avad up`
 
-This is Avalanche Docker v1.2.0
+This is Avalanche Docker v1.3.0
