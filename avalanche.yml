@@ -69,7 +69,6 @@ services:
   set-prune-marker:
     profiles: ["tools"]
     image: alpine:latest
-    user: "10001:10001"
     restart: "no"
     volumes:
       - ava-data:/var/lib/ava
