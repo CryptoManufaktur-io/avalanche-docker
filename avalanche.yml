@@ -7,6 +7,17 @@ x-logging: &logging
       tag: '{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}'
 
 services:
+  ava-init:
+    restart: "no"
+    build:
+      context: ./init
+      dockerfile: Dockerfile
+    image: init:avalanche
+    pull_policy: never
+    volumes:
+      - ava-data:/var/lib/ava
+      - /etc/localtime:/etc/localtime:ro
+
   avalanche:
     restart: "unless-stopped"
     stop_grace_period: 5m
@@ -16,6 +27,9 @@ services:
       - /etc/localtime:/etc/localtime:ro
     ports:
       - ${P2P_PORT:-9651}:${P2P_PORT:-9651}/tcp
+    depends_on:
+      ava-init:
+        condition: service_completed_successfully
     <<: *logging
     entrypoint:
       - /avalanchego/build/avalanchego
@@ -51,6 +65,16 @@ services:
       - metrics.scrape=true
       - metrics.path=/ext/metrics
       - metrics.port=9650
+
+  set-prune-marker:
+    profiles: ["tools"]
+    image: alpine:latest
+    user: "10001:10001"
+    restart: "no"
+    volumes:
+      - ava-data:/var/lib/ava
+    entrypoint: ["/bin/sh","-c"]
+    command: /bin/sh
 
 volumes:
   ava-data:

@@ -1,0 +1,4 @@
+{
+  "offline-pruning-enabled": false,
+  "offline-pruning-data-directory": "/var/lib/ava/offline-pruning"
+}
