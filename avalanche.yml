@@ -63,10 +63,10 @@ services:
       - traefik.http.routers.${RPC_HOST:-ava}lb.entrypoints=websecure
       - traefik.http.routers.${RPC_HOST:-ava}lb.rule=Host(`${RPC_LB:-ava-lb}.${DOMAIN}`)
       - traefik.http.routers.${RPC_HOST:-ava}lb.tls.certresolver=letsencrypt
-      - traefik.http.services.${RPC_HOST:-ava}.loadbalancer.server.port=9650
+      - traefik.http.services.${RPC_HOST:-ava}.loadbalancer.server.port=${HTTP_PORT:-9650}
       - metrics.scrape=true
       - metrics.path=/ext/metrics
-      - metrics.port=9650
+      - metrics.port=${HTTP_PORT:-9650}
 
   set-prune-marker:
     profiles: ["tools"]
