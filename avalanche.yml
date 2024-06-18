@@ -67,6 +67,7 @@ services:
       - metrics.scrape=true
       - metrics.path=/ext/metrics
       - metrics.port=${HTTP_PORT:-9650}
+      - metrics.network=avalanche-${NETWORK}
 
   set-prune-marker:
     profiles: ["tools"]
