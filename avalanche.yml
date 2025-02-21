@@ -49,7 +49,9 @@ services:
       - --staking-port
       - ${P2P_PORT:-9651}
       - --public-ip-resolution-service
-      - ifconfigme
+      - opendns
+      - --public-ip-resolution-frequency
+      - 24h
       - --log-level
       - ${LOG_LEVEL}
     command: ${EXTRAS}
