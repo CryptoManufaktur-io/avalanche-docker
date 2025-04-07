@@ -822,30 +822,6 @@ upgrade() {
 
 start() {
   __docompose up -d --remove-orphans "$@"
-# If you have an init container, e.g. to grab a SNAPSHOT, delete the above line and run this in screen
-#  if ! type -P screen >/dev/null 2>&1; then
-#    ${__auto_sudo} apt-get update && ${__auto_sudo} apt-get install -y screen
-#  fi
-# If multiples of this stack may run on one host, distinguish by something unique. Otherwise just set a value here
-#  __var="NETWORK"
-# __get_value_from_env "${__var}" "${__env_file}" "__screen_id"
-# hellcheck disable=SC2154
-#  rm -f "/tmp/${__screen_id}-compose-screen.log"
-# hellcheck disable=SC2086
-#  screen -dmS "${__screen_id}-compose-session" -L -Logfile "/tmp/${__screen_id}-compose-screen.log" ${__compose_exe} up -d --remove-orphans "$@"
-#  echo "Running \"docker compose up -d\" in screen because of the init container."
-#  echo
-#  echo "If this is your first start and you are getting a SNAPSHOT, you can view the init logs:"
-#  echo "\"${__me} logs -f init\""
-#  echo
-#  echo "You can attach to the screen session with \"screen -r ${__screen_id}-compose-session\""
-#  echo
-#  echo "Waiting 5 seconds"
-#  sleep 5
-#  echo
-#  echo "Here's the output of docker compose so far:"
-#  cat "/tmp/${__screen_id}-compose-screen.log"
-#  echo
 }
 
 
