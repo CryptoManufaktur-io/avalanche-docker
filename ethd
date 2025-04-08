@@ -18,7 +18,7 @@ version() {
 # Client versions
   case "${__value}" in
     *avalanche.yml* )
-      docompose exec avalanche /avalanchego/build/avalanchego --version
+      __docompose exec avalanche /avalanchego/build/avalanchego --version
       echo
       ;;&
   esac
