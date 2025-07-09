@@ -1,0 +1,90 @@
+x-logging: &logging
+  logging:
+    driver: json-file
+    options:
+      max-size: 100m
+      max-file: "3"
+      tag: '{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}'
+
+services:
+  ava-init:
+    restart: "no"
+    build:
+      context: ./init
+      dockerfile: Dockerfile
+    image: init:avalanche
+    pull_policy: never
+    volumes:
+      - ava-data:/var/lib/ava
+      - /etc/localtime:/etc/localtime:ro
+
+  avalanche:
+    restart: "unless-stopped"
+    stop_grace_period: 5m
+    build:
+      context: ./avalanche-app
+      args:
+        USER: avalanche
+        DAEMON_VERSION: ${AVA_DOCKER_TAG}
+    image: avalanche-app:${AVA_DOCKER_TAG}
+    pull_policy: never
+    volumes:
+      - ava-data:/var/lib/ava
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - ${P2P_PORT:-9651}:${P2P_PORT:-9651}/tcp
+    depends_on:
+      ava-init:
+        condition: service_completed_successfully
+    <<: *logging
+    entrypoint:
+      - /avalanchego/build/avalanchego
+      - --chain-config-dir
+      - /var/lib/ava/chain-configs
+      - --db-dir
+      - /var/lib/ava
+      - --db-type
+      - ${DB_TYPE}
+      - --network-id
+      - ${NETWORK}
+      - --http-host
+      - 0.0.0.0
+      - --http-port
+      - ${HTTP_PORT:-9650}
+      - --http-allowed-hosts=*
+      - --staking-port
+      - ${P2P_PORT:-9651}
+      - --public-ip-resolution-service
+      - opendns
+      - --public-ip-resolution-frequency
+      - 24h
+      - --log-level
+      - ${LOG_LEVEL}
+    command: ${EXTRAS}
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.${RPC_HOST:-ava}.service=${RPC_HOST:-ava}
+      - traefik.http.routers.${RPC_HOST:-ava}.entrypoints=websecure
+      - traefik.http.routers.${RPC_HOST:-ava}.rule=Host(`${RPC_HOST:-ava}.${DOMAIN}`)
+      - traefik.http.routers.${RPC_HOST:-ava}.tls.certresolver=letsencrypt
+      - traefik.http.routers.${RPC_HOST:-ava}lb.service=${RPC_HOST:-ava}
+      - traefik.http.routers.${RPC_HOST:-ava}lb.entrypoints=websecure
+      - traefik.http.routers.${RPC_HOST:-ava}lb.rule=Host(`${RPC_LB:-ava-lb}.${DOMAIN}`)
+      - traefik.http.routers.${RPC_HOST:-ava}lb.tls.certresolver=letsencrypt
+      - traefik.http.services.${RPC_HOST:-ava}.loadbalancer.server.port=${HTTP_PORT:-9650}
+      - metrics.scrape=true
+      - metrics.path=/ext/metrics
+      - metrics.port=${HTTP_PORT:-9650}
+      - metrics.network=avalanche-${NETWORK}
+
+  set-prune-marker:
+    profiles: ["tools"]
+    image: alpine:latest
+    restart: "no"
+    volumes:
+      - ava-data:/var/lib/ava
+    entrypoint: ["/bin/sh","-c"]
+    command: /bin/sh
+
+volumes:
+  ava-data:

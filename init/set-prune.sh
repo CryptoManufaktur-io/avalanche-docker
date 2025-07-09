@@ -14,3 +14,22 @@ if [ -f /var/lib/ava/prune-marker ]; then
 else
   jq '.["offline-pruning-enabled"] = false' config.json > config.tmp && mv config.tmp config.json
 fi
+
+if [ -f "$HOME/.avalanchego/staking/signer.key" ]; then
+  echo "Found Signer Key in keys folder"
+else
+  echo "Signer Key NOT found in keys folder - generating new one"
+fi
+
+if [ -f "$HOME/.avalanchego/staking/staker.key" ]; then
+  echo "Found Staker Key in keys folder"
+else
+  echo "Staker Key NOT found in keys folder - generating new one"
+fi
+
+
+if [ -f "$HOME/.avalanchego/staking/staker.crt" ]; then
+  echo "Found Staker CRT in keys folder"
+else
+  echo "Staker CRT NOT found in keys folder - generating new one"
+fi
