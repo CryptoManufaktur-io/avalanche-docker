@@ -17,6 +17,7 @@ services:
     volumes:
       - ava-data:/var/lib/ava
       - /etc/localtime:/etc/localtime:ro
+      - ./keys:/root/.avalanchego/staking
 
   avalanche:
     restart: "unless-stopped"
@@ -31,6 +32,7 @@ services:
     volumes:
       - ava-data:/var/lib/ava
       - /etc/localtime:/etc/localtime:ro
+      - ./keys:/root/.avalanchego/staking
     ports:
       - ${P2P_PORT:-9651}:${P2P_PORT:-9651}/tcp
     depends_on:
