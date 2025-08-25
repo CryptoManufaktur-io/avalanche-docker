@@ -27,7 +27,6 @@ else
   echo "Staker Key NOT found in keys folder - generating new one"
 fi
 
-
 if [ -f "$HOME/.avalanchego/staking/staker.crt" ]; then
   echo "Found Staker CRT in keys folder"
 else

@@ -1,3 +1,4 @@
+# To be used with avalanche.yml
 networks:
   default:
     name: ${DOCKER_EXT_NETWORK:-traefik_default}

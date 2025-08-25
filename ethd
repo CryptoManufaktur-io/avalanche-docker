@@ -956,8 +956,7 @@ prune() {
   fi
 
   set +e
-  sync_status=$(cmd run --rm --entrypoint wget ava-init -qO- "http://avalanche:$rpc_port/ext/bc/C/rpc" --header 'Content-Type: application/json' --post-data '{"jsonrpc":"2.0","method":"
-eth_syncing","params":[],"id":1}')
+  sync_status=$(cmd run --rm --entrypoint wget ava-init -qO- "http://avalanche:$rpc_port/ext/bc/C/rpc" --header 'Content-Type: application/json' --post-data '{"jsonrpc":"2.0","method":"eth_syncing","params":[],"id":1}')
   exitstatus=$?
   if [ $exitstatus -ne 0 ]; then
     echo "Avalanche RPC is not responding, aborting."

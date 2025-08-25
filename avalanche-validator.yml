@@ -1,0 +1,20 @@
+# To be used with avalanche.yml
+services:
+  ava-init:
+    volumes:
+      - ava-data:/var/lib/ava
+      - /etc/localtime:/etc/localtime:ro
+      - ./keys:/home/avalanche/.avalanchego/staking
+
+  avalanche:
+    build:
+      context: ./avalanche-app
+      args:
+        USER: avalanche
+        DAEMON_VERSION: ${AVA_DOCKER_TAG}
+    image: avalanche-app:${AVA_DOCKER_TAG}
+    pull_policy: never
+    volumes:
+      - ava-data:/var/lib/ava
+      - /etc/localtime:/etc/localtime:ro
+      - ./keys:/home/avalanche/.avalanchego/staking

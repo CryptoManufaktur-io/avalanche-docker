@@ -20,5 +20,3 @@ RUN mkdir -p /var/lib/ava/mainnet/pebble && \
     chmod -R 700 /var/lib/ava
 
 USER ${USER}
-
-
