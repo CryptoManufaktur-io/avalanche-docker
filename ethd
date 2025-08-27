@@ -116,6 +116,13 @@ __env_migrate() {
       __update_value_in_env "${__new_vars[__index]}" "$__value" "${__env_file}"
     fi
   done
+
+  if [ "${__source_ver}" -le 2 ]; then
+    __volume_name=$(__dodocker volume ls -q -f "name=^$(basename "$(realpath .)")_[^_]+")
+    __mnt_path=/home/avalanche/.avalanchego
+    __dodocker run --rm -v ${__volume_name}:${__mnt_path} busybox sh -c "chown -R 10001:10001 ${__mnt_path}"
+  fi
+
   __during_migrate=0
 }
 
@@ -988,7 +995,7 @@ prune() {
   echo
   echo "Starting C-Chain prune"
   echo
-  cmd run --rm set-prune-marker "touch /var/lib/ava/prune-marker"
+  cmd run --rm set-prune-marker "touch /home/avalanche/.avalanchego/prune-marker"
   cmd stop avalanche && cmd rm -f avalanche
   start
   echo

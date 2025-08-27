@@ -1,15 +1,15 @@
 #!/usr/bin/env sh
 set -eu
 
-if [ ! -f /var/lib/ava/chain-configs/C/config.json ]; then
-  mkdir -p /var/lib/ava/offline-pruning/
-  mkdir -p /var/lib/ava/chain-configs/C/
-  cp /root/config.json /var/lib/ava/chain-configs/C/
+if [ ! -f /home/avalanche/.avalanchego/chain-configs/C/config.json ]; then
+  mkdir -p /home/avalanche/.avalanchego/offline-pruning/
+  mkdir -p /home/avalanche/.avalanchego/chain-configs/C/
+  cp /home/avalanche/config.json /home/avalanche/.avalanchego/chain-configs/C/
 fi
 
-cd /var/lib/ava/chain-configs/C/
-if [ -f /var/lib/ava/prune-marker ]; then
-  rm -f /var/lib/ava/prune-marker
+cd /home/avalanche/.avalanchego/chain-configs/C/
+if [ -f /home/avalanche/.avalanchego/prune-marker ]; then
+  rm -f /home/avalanche/.avalanchego/prune-marker
   jq '.["offline-pruning-enabled"] = true' config.json > config.tmp && mv config.tmp config.json
 else
   jq '.["offline-pruning-enabled"] = false' config.json > config.tmp && mv config.tmp config.json

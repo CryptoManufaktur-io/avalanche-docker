@@ -2,7 +2,7 @@
 services:
   ava-init:
     volumes:
-      - ava-data:/var/lib/ava
+      - ava-data:/home/avalanche/.avalanchego
       - /etc/localtime:/etc/localtime:ro
       - ./keys:/home/avalanche/.avalanchego/staking
 
@@ -14,7 +14,8 @@ services:
         DAEMON_VERSION: ${AVA_DOCKER_TAG}
     image: avalanche-app:${AVA_DOCKER_TAG}
     pull_policy: never
+    user: avalanche
     volumes:
-      - ava-data:/var/lib/ava
+      - ava-data:/home/avalanche/.avalanchego
       - /etc/localtime:/etc/localtime:ro
       - ./keys:/home/avalanche/.avalanchego/staking

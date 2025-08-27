@@ -15,8 +15,8 @@ RUN adduser \
 RUN usermod -rG users ${USER}
 
 # Create directory and fix ownership
-RUN mkdir -p /var/lib/ava/mainnet/pebble && \
-    chown -R ${USER}:${USER} /var/lib/ava && \
-    chmod -R 700 /var/lib/ava
+RUN mkdir -p /home/avalanche/.avalanchego/mainnet/pebble && \
+    chown -R ${USER}:${USER} /home/avalanche/.avalanchego && \
+    chmod -R 700 /home/avalanche/.avalanchego
 
 USER ${USER}
