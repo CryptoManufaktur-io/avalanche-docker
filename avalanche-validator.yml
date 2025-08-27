@@ -4,7 +4,7 @@ services:
     volumes:
       - ava-data:/home/avalanche/.avalanchego
       - /etc/localtime:/etc/localtime:ro
-      - ./keys:/home/avalanche/.avalanchego/staking
+      - ./keys:/home/avalanche/.avalanchego/staking:rw
 
   avalanche:
     build:
@@ -18,4 +18,4 @@ services:
     volumes:
       - ava-data:/home/avalanche/.avalanchego
       - /etc/localtime:/etc/localtime:ro
-      - ./keys:/home/avalanche/.avalanchego/staking
+      - ./keys:/home/avalanche/.avalanchego/staking:rw
