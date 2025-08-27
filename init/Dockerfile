@@ -15,6 +15,11 @@ RUN adduser \
     --uid "${UID}" \
     "${USER}"
 
+# Create directory and fix ownership
+RUN mkdir -p /home/avalanche/.avalanchego/mainnet/pebble && \
+    chown -R ${USER}:${USER} /home/avalanche/.avalanchego && \
+    chmod -R 700 /home/avalanche/.avalanchego
+
 USER ${USER}
 
 ENTRYPOINT [ "set-prune.sh" ]
