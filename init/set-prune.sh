@@ -4,8 +4,9 @@ set -eu
 if [ ! -f /home/avalanche/.avalanchego/chain-configs/C/config.json ]; then
   mkdir -p /home/avalanche/.avalanchego/offline-pruning/
   mkdir -p /home/avalanche/.avalanchego/chain-configs/C/
-  cp /home/avalanche/config.json /home/avalanche/.avalanchego/chain-configs/C/
 fi
+
+cp /home/avalanche/config.json /home/avalanche/.avalanchego/chain-configs/C/
 
 cd /home/avalanche/.avalanchego/chain-configs/C/
 if [ -f /home/avalanche/.avalanchego/prune-marker ]; then
