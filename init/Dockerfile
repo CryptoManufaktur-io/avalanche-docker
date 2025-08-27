@@ -17,6 +17,7 @@ RUN adduser \
 
 # Create directory and fix ownership
 RUN mkdir -p /home/avalanche/.avalanchego/mainnet/pebble && \
+    mkdir -p /home/avalanche/.avalanchego/staking && \
     chown -R ${USER}:${USER} /home/avalanche/.avalanchego && \
     chmod -R 700 /home/avalanche/.avalanchego
 
