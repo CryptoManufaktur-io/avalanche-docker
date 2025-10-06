@@ -3,3 +3,6 @@
 *.bak
 *.original
 custom.yml
+keys
+keys-staked
+keys-unstaked

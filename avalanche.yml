@@ -14,8 +14,9 @@ services:
       dockerfile: Dockerfile
     image: init:avalanche
     pull_policy: never
+    user: avalanche
     volumes:
-      - ava-data:/var/lib/ava
+      - ava-data:/home/avalanche/.avalanchego
       - /etc/localtime:/etc/localtime:ro
 
   avalanche:
@@ -23,7 +24,7 @@ services:
     stop_grace_period: 5m
     image: avaplatform/avalanchego:${AVA_DOCKER_TAG}
     volumes:
-      - ava-data:/var/lib/ava
+      - ava-data:/home/avalanche/.avalanchego
       - /etc/localtime:/etc/localtime:ro
     ports:
       - ${P2P_PORT:-9651}:${P2P_PORT:-9651}/tcp
@@ -34,9 +35,9 @@ services:
     entrypoint:
       - /avalanchego/build/avalanchego
       - --chain-config-dir
-      - /var/lib/ava/chain-configs
+      - /home/avalanche/.avalanchego/chain-configs
       - --db-dir
-      - /var/lib/ava
+      - /home/avalanche/.avalanchego
       - --db-type
       - ${DB_TYPE}
       - --network-id
@@ -73,10 +74,15 @@ services:
 
   set-prune-marker:
     profiles: ["tools"]
-    image: alpine:latest
+    build:
+      context: ./init
+      dockerfile: Dockerfile
+    image: init:avalanche
+    pull_policy: never
     restart: "no"
+    user: avalanche
     volumes:
-      - ava-data:/var/lib/ava
+      - ava-data:/home/avalanche/.avalanchego
     entrypoint: ["/bin/sh","-c"]
     command: /bin/sh
 

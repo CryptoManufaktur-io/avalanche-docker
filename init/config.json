@@ -1,4 +1,5 @@
 {
   "offline-pruning-enabled": false,
-  "offline-pruning-data-directory": "/var/lib/ava/offline-pruning"
+  "pruning-enabled": true,
+  "offline-pruning-data-directory": "/home/avalanche/.avalanchego/offline-pruning/"
 }

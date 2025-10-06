@@ -1,11 +1,8 @@
-FROM alpine:latest
+ARG DAEMON_VERSION=latest
+FROM avaplatform/avalanchego:${DAEMON_VERSION}
 
 ARG USER=avalanche
 ARG UID=10001
-
-RUN apk update && apk add --no-cache jq wget
-COPY set-prune.sh /usr/local/bin/
-COPY config.json /home/avalanche/
 
 # See https://stackoverflow.com/a/55757473/12429735RUN
 RUN adduser \
@@ -15,6 +12,8 @@ RUN adduser \
     --uid "${UID}" \
     "${USER}"
 
+RUN usermod -rG users ${USER}
+
 # Create directory and fix ownership
 RUN mkdir -p /home/avalanche/.avalanchego/mainnet/pebble && \
     mkdir -p /home/avalanche/.avalanchego/staking && \
@@ -22,5 +21,3 @@ RUN mkdir -p /home/avalanche/.avalanchego/mainnet/pebble && \
     chmod -R 700 /home/avalanche/.avalanchego
 
 USER ${USER}
-
-ENTRYPOINT [ "set-prune.sh" ]
