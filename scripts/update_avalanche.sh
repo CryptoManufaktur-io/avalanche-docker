@@ -32,7 +32,7 @@ get_version_from_container() {
   # Prefer avalanchego/<version> (e.g. avalanchego/1.14.1) to avoid picking database=vX.Y.Z
   ver="$(echo "$out" | grep -Eo 'avalanchego/[0-9]+\.[0-9]+\.[0-9]+' | head -n1 | cut -d/ -f2 || true)"
 
-  # Fallback: if output is different on some builds, try "avalanchego version vX.Y.Z"
+  # Fallback: if output is different on some builds, try any vX.Y.Z and strip v
   if [[ -z "$ver" ]]; then
     ver="$(echo "$out" | grep -Eo 'v[0-9]+\.[0-9]+\.[0-9]+' | head -n1 | sed 's/^v//' || true)"
   fi
@@ -55,8 +55,7 @@ read_keys_link_normalized() {
 
   local raw
   raw="$(readlink "$dir/keys" 2>/dev/null || true)"
-  # Normalize: remove trailing slashes like keys-unstaked/ -> keys-unstaked
-  raw="$(printf '%s' "$raw" | sed 's:/*$::')"
+  raw="$(printf '%s' "$raw" | sed 's:/*$::')"   # strip trailing slashes
   echo "${raw:-}"
 }
 
@@ -68,7 +67,7 @@ ensure_keys_points_to_unstaked() {
     die "'$dir/keys' exists but is not a symlink. Refusing to modify."
   fi
 
-  local link
+  local link base
   link="$(read_keys_link_normalized "$dir")"
 
   if [[ -z "$link" ]]; then
@@ -77,23 +76,25 @@ ensure_keys_points_to_unstaked() {
     return 0
   fi
 
-  log "keys currently -> $link"
+  # Accept absolute/relative targets; only the last path component matters
+  base="$(basename "$link")"
 
-  if [[ "$link" == "keys-unstaked" ]]; then
+  log "keys currently -> $link (base: $base)"
+
+  if [[ "$base" == "keys-unstaked" ]]; then
     log "keys already points to keys-unstaked; skipping."
     return 0
   fi
 
-  if [[ "$link" == "keys-staked" ]]; then
+  if [[ "$base" == "keys-staked" ]]; then
     log "keys points to keys-staked -> switching to keys-unstaked"
     rm -f "$dir/keys"
     ln -s keys-unstaked "$dir/keys"
     return 0
   fi
 
-  die "keys symlink points to unexpected target: '$link' (expected keys-staked or keys-unstaked)"
+  die "keys symlink points to unexpected target: '$link' (base: '$base') (expected keys-staked or keys-unstaked)"
 }
-
 
 run_ethd() {
   local dir="$1" cmd="$2"
@@ -108,8 +109,9 @@ main() {
   [[ -n "$dir" ]] || die "No directory provided"
   check_dir "$dir"
 
-  target="$(prompt "Target avalanchego version (e.g. v1.12.3): ")"
+  target="$(prompt "Target avalanchego version (e.g. v1.14.1 or 1.14.1): ")"
   [[ -n "$target" ]] || die "No target version provided"
+  target="${target#v}"   # normalize
 
   cname="$(prompt "Docker container name for version check (optional, Enter to skip): ")"
 
@@ -128,6 +130,7 @@ main() {
     [[ -n "$cname" ]] && warn "Container '$cname' not found or docker unavailable; skipping version check."
   fi
 
+  # Correct order per your runbook
   run_ethd "$dir" update
   run_ethd "$dir" down
   ensure_keys_points_to_unstaked "$dir"
