@@ -84,7 +84,7 @@ services:
     volumes:
       - ava-data:/home/avalanche/.avalanchego
     entrypoint: ["/bin/sh","-c"]
-    command: /bin/sh
+    command: touch /home/avalanche/.avalanchego/prune-marker
 
 volumes:
   ava-data:
