@@ -36,6 +36,11 @@ services:
       - /avalanchego/build/avalanchego
       - --chain-config-dir
       - /home/avalanche/.avalanchego/chain-configs
+      # The image runs as root, so the default chain data dir is /root/.avalanchego/chainData, inside the
+      # container. avalanchego >= 1.15 keeps the C-Chain execution results there, and they were lost
+      # whenever the container was recreated. Keep them on the volume.
+      - --chain-data-dir
+      - /home/avalanche/.avalanchego/chainData
       - --db-dir
       - /home/avalanche/.avalanchego
       - --db-type
